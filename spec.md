@@ -39,6 +39,7 @@ This document describes the MessagePack type system, MessagePack formats and con
       * [map format family](#map-format-family)
       * [ext format family](#ext-format-family)
       * [Timestamp extension type](#timestamp-extension-type)
+      * [UUID extension type](#uuid-extension-type)
   * [Serialization: type to format conversion](#serialization-type-to-format-conversion)
   * [Deserialization: format to type conversion](#deserialization-format-to-type-conversion)
   * [Future discussion](#future-discussion)
@@ -60,6 +61,7 @@ This document describes the MessagePack type system, MessagePack formats and con
   * **Map** represents key-value pairs of objects
   * **Extension** represents a tuple of type information and a byte array where type information is an integer whose meaning is defined by applications or MessagePack specification
       * **Timestamp** represents an instantaneous point on the time-line in the world that is independent from time zones or calendars. Maximum precision is nanoseconds.
+      * **UUID** stores a Universally Unique Identifier (standard and practically unique 128-bit label)
 
 ### Limitation
 
@@ -90,6 +92,7 @@ Here is the list of predefined extension types. Formats of the types are defined
 Name      | Type
 --------- | ----
 Timestamp | -1
+UUID      | -2
 
 ## Formats
 
@@ -491,6 +494,22 @@ Pseudo code for deserialization:
      default:
          // error
      }
+
+### UUID extension type
+
+UUID extension type is assigned to extension type `-2`. It defines a single format: `fixext 16` 128-bit (16 bytes):
+
+    UUID 128 stores the 128-bit label in the big-endian format
+
+    +--------+--------+--------+--------+--------+--------+
+    |  0xd8  |   -2   |            128-bit UUID
+    +--------+--------+--------+--------+--------+--------+
+    +--------+--------+--------+--------+--------+--------+--------+--------+
+                                   128-bit UUID (cont.)
+    +--------+--------+--------+--------+--------+--------+--------+--------+
+    +--------+--------+--------+--------+
+        128-bit UUID (cont.)            |
+    +--------+--------+--------+--------+
 
 ## Serialization: type to format conversion
 
