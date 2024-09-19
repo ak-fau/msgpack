@@ -61,7 +61,7 @@ This document describes the MessagePack type system, MessagePack formats and con
   * **Map** represents key-value pairs of objects
   * **Extension** represents a tuple of type information and a byte array where type information is an integer whose meaning is defined by applications or MessagePack specification
       * **Timestamp** represents an instantaneous point on the time-line in the world that is independent from time zones or calendars. Maximum precision is nanoseconds.
-      * **UUID** stores a Universally Unique Identifier (standard and practically unique 128-bit label)
+      * **UID** stores a Unique Identifier (either EUI-48, EUI-64, or UUID)
 
 ### Limitation
 
@@ -92,7 +92,7 @@ Here is the list of predefined extension types. Formats of the types are defined
 Name      | Type
 --------- | ----
 Timestamp | -1
-UUID      | -2
+UID       | -2
 
 ## Formats
 
@@ -495,11 +495,17 @@ Pseudo code for deserialization:
          // error
      }
 
-### UUID extension type
+### UID extension type
 
-UUID extension type is assigned to extension type `-2`. It defines a single format: `fixext 16` 128-bit (16 bytes):
+UID extension type is assigned to extension type `-2`. It defines 3 formats: `fixext 8` 64-bit UID, `fixext 16` 128-bit UID, and optional `ext 8` with data length set to 6 bytes for 48-bit UID:
 
-    UUID 128 stores the 128-bit label in the big-endian format
+    UID 64 stores the 64-bit label (IEEE Extended Unique Identifier 64-bit)
+
+    +--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+    |  0xd7  |   -2   |                                EUI-64                                 |
+    +--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+
+    UID 128 stores the 128-bit label (Universally Unique Identifier)
 
     +--------+--------+--------+--------+--------+--------+
     |  0xd8  |   -2   |            128-bit UUID
@@ -510,6 +516,14 @@ UUID extension type is assigned to extension type `-2`. It defines a single form
     +--------+--------+--------+--------+
         128-bit UUID (cont.)            |
     +--------+--------+--------+--------+
+
+    UID 48 stores the 48-bit label (IEEE Extended Unique Identifier 48-bit),
+    this optional format is 1 byte shorter that `fixext 8` representation of the same itentifier
+    represented as UID 64
+
+    +--------+--------+--------+--------+--------+--------+--------+--------+--------+
+    |  0xc7  |    6   |   -2   |                        EUI-48                       |
+    +--------+--------+--------+--------+--------+--------+--------+--------+--------+
 
 ## Serialization: type to format conversion
 
